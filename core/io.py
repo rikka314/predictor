@@ -4,7 +4,7 @@ from io import BytesIO
 
 import numpy as np
 import pandas as pd
-from pandas.api.types import is_numeric_dtype
+from pandas.api.types import is_datetime64_any_dtype, is_numeric_dtype
 
 
 def _normalize_date_column(series: pd.Series) -> pd.Series:
@@ -13,6 +13,9 @@ def _normalize_date_column(series: pd.Series) -> pd.Series:
 
     if non_missing.empty:
         return values
+
+    if is_datetime64_any_dtype(non_missing):
+        return pd.to_datetime(values, errors="coerce")
 
     numeric_values = pd.to_numeric(non_missing, errors="coerce")
     if is_numeric_dtype(non_missing) or numeric_values.notna().all():

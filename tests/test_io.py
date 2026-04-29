@@ -62,6 +62,22 @@ def test_read_uploaded_xlsx_converts_excel_serial_dates() -> None:
     ]
 
 
+def test_read_uploaded_xlsx_preserves_excel_datetime_cells() -> None:
+    df = pd.DataFrame(
+        {
+            "date": pd.date_range("2026-01-01", periods=2, freq="D"),
+            "y": [10, 11],
+        }
+    )
+
+    parsed = read_uploaded_xlsx(_xlsx_bytes(df))
+
+    assert parsed["date"].dt.strftime("%Y-%m-%d").tolist() == [
+        "2026-01-01",
+        "2026-01-02",
+    ]
+
+
 def test_to_forecast_xlsx_writes_forecasts_with_optional_dates() -> None:
     output = to_forecast_xlsx(
         np.array([1.25, 2.5]),
