@@ -183,20 +183,20 @@ for differencing in (0, 1, 2):  # 当前只搜 0, 1
 
 > ⚠ T+30 后禁止新增功能
 
-- [ ] **2.1** 完整 evaluation 脚本最终一跑
+- [x] **2.1** 完整 evaluation 脚本最终一跑
   ```bash
   python tests/run_module_b_evaluation.py --report-path report/module_b_evaluation_final.md
   ```
-  对比 `report/module_b_evaluation.md`（优化前）和 `report/module_b_evaluation_final.md`（优化后），确认全面改善
-- [ ] **2.2** Streamlit 端到端测试
-  - 上传 `dataset.xlsx` → 一步预测 → 回测 → 下载 xlsx
+  对比 `report/module_b_evaluation.md`（优化前）和 `report/module_b_evaluation_final.md`（优化后），确认 sample 指标改善：RMSE 0.004106, MAE 0.003240, MAPE 0.2382%
+- [x] **2.2** Streamlit 端到端测试
+  - 上传 `dataset.xlsx` → 一步预测 `1.354736` → 回测指标出现 → xlsx 可下载
   - 打开下载的 xlsx → 确认列名（`date`, `y`）、行数（100 行 = 500 × 0.2）
-- [ ] **2.3** 边界测试
-  - 只有 `y` 列（无 `date`）→ 应正常
-  - 短序列（10 行）→ 应降级到 naive/HW 而非崩溃
-- [ ] **2.4** 性能检查
-  - 回测总时长仍 < 30s？（当前 12.88s，特征增加后预计 15-20s）
-  - 若 > 60s → 减少 XGBoost n_estimators
+- [x] **2.3** 边界测试
+  - 只有 `y` 列（无 `date`）→ 正常输出单列 `y`、100 行
+  - 短序列（10 行）→ 正常输出 2 行，未崩溃
+- [x] **2.4** 性能检查
+  - 完整回测耗时 18.14s，仍 < 30s
+  - 无需减少 XGBoost n_estimators
 
 ---
 
@@ -278,5 +278,5 @@ git stash
 
 ### 回归验证
 - [x] evaluation 脚本跑完对比（`report/module_b_evaluation_final.md`：RMSE 0.004106, MAE 0.003240, MAPE 0.2382%）
-- [ ] 端到端 Streamlit 测试通过
+- [x] 端到端 Streamlit 测试通过（上传、预测、回测、下载 xlsx）
 - [ ] 部署后线上验证通过
