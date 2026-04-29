@@ -10,12 +10,17 @@ from core.config import DEFAULT_THRESHOLD
 
 
 _ENSEMBLE_WEIGHTS = {
-    "holt_winters": 0.35,
-    "arima": 0.35,
-    "xgboost": 0.30,
+    "holt_winters": 0.05,
+    "arima": 0.75,
+    "xgboost": 0.20,
 }
 _MAX_LAG = 20
 _MIN_XGB_SERIES_LENGTH = 30
+_ETS_CONFIGS = (
+    {"trend": "add", "damped_trend": True},
+    {"trend": "add", "damped_trend": False},
+    {"trend": None, "damped_trend": False},
+)
 
 
 def _sigmoid(x: np.ndarray) -> np.ndarray:
@@ -48,18 +53,31 @@ def _holt_winters_forecast(series: np.ndarray) -> float | None:
     try:
         from statsmodels.tsa.holtwinters import ExponentialSmoothing
 
-        model = ExponentialSmoothing(
-            series,
-            trend="add",
-            damped_trend=True,
-            seasonal=None,
-            initialization_method="estimated",
-        )
+        best: tuple[float, float] | None = None
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             with np.errstate(all="ignore"):
-                fit = model.fit(optimized=True, remove_bias=True)
-                return float(fit.forecast(1)[0])
+                for config in _ETS_CONFIGS:
+                    try:
+                        model = ExponentialSmoothing(
+                            series,
+                            trend=config["trend"],
+                            damped_trend=bool(config["damped_trend"]),
+                            seasonal=None,
+                            initialization_method="estimated",
+                        )
+                        fit = model.fit(optimized=True, remove_bias=True)
+                        pred = float(fit.forecast(1)[0])
+                        aic = float(getattr(fit, "aic", np.inf))
+                    except Exception:
+                        continue
+
+                    if np.isfinite(pred) and (best is None or aic < best[1]):
+                        best = (pred, aic)
+
+        if best is None:
+            return None
+        return best[0]
     except Exception:
         return None
 
@@ -100,10 +118,10 @@ def _numpy_auto_arima_forecast(series: np.ndarray) -> float | None:
         return None
 
     best: tuple[float, float] | None = None
-    max_order = min(5, max(1, series.size // 10))
+    max_order = min(8, max(1, series.size // 8))
 
-    for differencing in (0, 1):
-        values = np.diff(series) if differencing else series
+    for differencing in (0, 1, 2):
+        values = np.diff(series, n=differencing) if differencing else series
         if values.size < 3:
             continue
 
@@ -113,7 +131,12 @@ def _numpy_auto_arima_forecast(series: np.ndarray) -> float | None:
                 continue
 
             pred, aic = fitted
-            next_value = float(series[-1] + pred) if differencing else float(pred)
+            if differencing == 0:
+                next_value = float(pred)
+            elif differencing == 1:
+                next_value = float(series[-1] + pred)
+            else:
+                next_value = float(2 * series[-1] - series[-2] + pred)
             if best is None or aic < best[1]:
                 best = (next_value, aic)
 

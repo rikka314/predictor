@@ -87,7 +87,7 @@ pred = model.predict(x_pred)[0]
 ```
 
 ### 集成策略
-- 初始权重：HW=0.35, ARIMA=0.35, XGB=0.30
+- Phase1 最终权重：HW=0.05, ARIMA=0.75, XGB=0.20（基于 `report/module_b_evaluation_final.md` 的 sample RMSE 优化）
 - 若 M1 拟合失败（异常），退出权重平分到 M2/M3
 - 若 M2 拟合失败，退出权重平分到 M1/M3
 - 若序列长度 < 30，跳过 XGB，仅用 M1+M2 均值
