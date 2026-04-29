@@ -6,12 +6,12 @@
 
 ## 项目一句话
 
-这是一个基于 Streamlit 的时间序列预测 WebApp，面向课程 final 题目：用户上传 `.xlsx`（首个 sheet，必含 `y`，可选 `date`），系统自动完成一步预测与滚动回测，并导出规范化预测结果文件；线上通过 `gfm156.com/predict` 对外提供服务。
+这是一个基于 Streamlit 的时间序列预测 WebApp，面向课程 final 题目：用户上传 `.xlsx`（首个 sheet，必含 `y`，可选 `date`），系统自动完成一步预测与滚动回测，并导出规范化预测结果文件；线上通过 `gfm156.com/predictor` 对外提供服务。
 
 ## 关键运行事实
 
-- 公开路径：`/predict`
-- Streamlit 配置：`server.baseUrlPath = "predict"`
+- 公开路径：`/predictor`
+- Streamlit 配置：`server.baseUrlPath = "predictor"`
 - 默认监听：`0.0.0.0:8501`
 - 建议服务器目录：`/opt/predict-webapp`
 - 建议 systemd 服务名：`predict-webapp`
